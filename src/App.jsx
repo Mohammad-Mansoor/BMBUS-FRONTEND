@@ -29,7 +29,6 @@ export default function App() {
   return (
     <Router>
       <Layout>
-        {/* <ToastProvider> */}
         <Suspense fallback={<div>Loading...</div>}>
           <QueryClientProvider client={queryClient}>
             <Provider store={store}>

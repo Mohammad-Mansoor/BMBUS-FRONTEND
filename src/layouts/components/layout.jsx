@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
-import { FiMenu, FiX, FiHome, FiSettings, FiUser } from "react-icons/fi";
-import routes from "../../routes/routes";
+import { FiMenu, FiX } from "react-icons/fi";
 import { NavLink } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-// import { ToastContainer } from "@heroui/react";
+import Navbar from "./Navbar";
+import routes from "../../routes/routes";
+import { useTranslation } from "react-i18next";
 
 export default function Layout({ children }) {
+  const { i18n, t } = useTranslation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isScreenMd, setIsScreenMd] = useState(false);
+
+  // Detect if the language is RTL
+  const isRTL = i18n.language === "ps" || i18n.language === "fa";
 
   useEffect(() => {
     const handleResize = () => {
@@ -19,18 +24,28 @@ export default function Layout({ children }) {
   }, []);
 
   return (
-    <div className="light text-foreground bg-background">
-      <div className="flex min-h-screen h-auto">
+    <div
+      className="light text-foreground bg-background"
+      dir={isRTL ? "rtl" : "ltr"}
+    >
+      <div
+        className={`flex min-h-screen h-auto dark:bg-black ${
+          isRTL ? "flex-row-reverse" : ""
+        }`}
+      >
+        {/* Sidebar */}
         <aside
-          className={`bg-gray-800 text-white p-4 fixed h-full shadow-xl transition-all duration-300 ${
+          className={`bg-gray-800 z-20 text-white p-4 fixed h-full shadow-xl transition-all duration-300 ${
             isScreenMd
               ? isSidebarOpen
                 ? "w-64"
                 : "w-16"
               : isSidebarOpen
               ? "translate-x-0 w-64"
-              : "-translate-x-64 w-64"
-          } md:translate-x-0`}
+              : "-translate-x-[400px] w-64"
+          } md:translate-x-0 ${
+            isRTL ? "right-0 left-auto" : "left-0 right-auto"
+          }`}
         >
           <div className="text-lg font-bold mb-4 flex justify-between items-center">
             <p className={`${isSidebarOpen ? "block" : "hidden md:block"}`}>
@@ -54,7 +69,9 @@ export default function Layout({ children }) {
                     key={i}
                     className={`p-2 ${
                       isSidebarOpen ? "w-full" : ""
-                    }  hover:bg-gray-700 rounded cursor-pointer flex items-center`}
+                    } hover:bg-gray-700 rounded cursor-pointer flex items-center gap-3 ${
+                      isRTL ? "flex-row-reverse" : ""
+                    }`}
                   >
                     <NavLink
                       to={route.path}
@@ -66,7 +83,7 @@ export default function Layout({ children }) {
                     >
                       {route.icon}
                       {isSidebarOpen && (
-                        <span className="ml-2">{route.name}</span>
+                        <span className="mx-2">{route.name}</span>
                       )}
                     </NavLink>
                   </li>
@@ -75,12 +92,22 @@ export default function Layout({ children }) {
           </ul>
         </aside>
 
+        {/* Main Content */}
         <div
           className={`flex flex-col flex-1 ml-0 transition-all duration-300 ${
-            isScreenMd ? (isSidebarOpen ? "md:ml-64" : "md:ml-16") : ""
+            isScreenMd
+              ? isSidebarOpen
+                ? isRTL
+                  ? "md:mr-64"
+                  : "md:ml-64"
+                : isRTL
+                ? "md:mr-16"
+                : "md:ml-16"
+              : ""
           }`}
         >
-          <nav className="bg-gray-900 text-white p-4  flex justify-between items-center">
+          {/* Navbar */}
+          <nav className="bg-gray-900 text-white p-4 flex justify-between items-center">
             {!isSidebarOpen && (
               <button
                 className="text-white"
@@ -89,23 +116,29 @@ export default function Layout({ children }) {
                 {isSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
               </button>
             )}
-            <div className="text-lg font-bold">Navbar</div>
+            <div className="w-full">
+              <Navbar />
+            </div>
           </nav>
 
-          <main className="p-4 flex-1 bg-gray-100">{children}</main>
+          {/* Page Content */}
+          <main className="p-4 flex-1 bg-gray-100 dark:text-gray-300 dark:bg-gray-700">
+            {children}
+          </main>
+
+          {/* Toast Notifications */}
           <ToastContainer
-            position="top-right" // Position of the toast
-            autoClose={3000} // Time in milliseconds before the toast auto-closes
-            hideProgressBar={false} // Show/hide the progress bar
-            newestOnTop={false} // Display new toasts on top
-            closeOnClick // Close the toast when clicked
-            rtl={false} // Right-to-left support
-            pauseOnFocusLoss // Pause toast when the window loses focus
-            draggable // Allow dragging the toast
-            pauseOnHover // Pause the timer when hovering over the toast
-            theme="light" // Theme options: 'light', 'dark', 'colored'
-            limit={3} // Limit the number of toasts shown at the same time
-           
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={isRTL}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+            limit={3}
           />
         </div>
       </div>

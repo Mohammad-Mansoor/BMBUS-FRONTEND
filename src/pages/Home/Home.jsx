@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@heroui/button";
 
 import { toast } from "react-toastify";
+import { addToast } from "@heroui/toast";
 function Home() {
   const { t, i18n } = useTranslation();
   const count = useSelector((state) => state.counter.value);
@@ -55,7 +56,13 @@ function Home() {
       <div className="my-5 flex items-center justify-center ">
         <Button
           onPress={() => {
-            toast.success("i am clicked");
+            addToast({
+              title: "Toast title",
+              description: "Toast displayed successfully",
+              // @ts-ignore
+              variant: "solid",
+              color: "secondary",
+            });
           }}
         >
           Click me to show toast

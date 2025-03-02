@@ -1,21 +1,27 @@
+import { addToast } from "@heroui/toast";
 import { useEffect } from "react";
-import { toast } from "react-toastify";
 
 const NetworkListener = () => {
   useEffect(() => {
     // ✅ Show toast when offline
     const handleOffline = () => {
-      toast.error("⚠️ Connection lost!", {
-        position: "top-right",
-        style: { backgroundColor: "#FF5733", color: "#fff" }, // Red background for error
+      addToast({
+        title: "Network Connectivity",
+        description: "You Lost Network Conectivity",
+
+        variant: "solid",
+        color: "danger",
       });
     };
 
     // ✅ Show toast when back online
     const handleOnline = () => {
-      toast.success("✅ You are back online!", {
-        position: "top-right",
-        style: { backgroundColor: "#45D483", color: "#fff" }, // Green background for success
+      addToast({
+        title: "Network Connectivity",
+        description: "Network Connection Established",
+
+        variant: "solid",
+        color: "success",
       });
     };
 

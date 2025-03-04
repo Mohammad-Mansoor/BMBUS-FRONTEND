@@ -25,7 +25,7 @@ export default function Layout({ children }) {
 
   return (
     <div
-      className="light text-foreground bg-background"
+      className="light text-foreground bg-background "
       dir={isRTL ? "rtl" : "ltr"}
     >
       <div

@@ -119,8 +119,8 @@ export default function About() {
   }, []);
 
   return (
-    <Card className="bg-white dark:bg-slate-800 overflow-hidden">
-      <div className="w-full py-4 px-4">
+    <>
+    <div className="w-full py-4 px-4">
         <Input
           isClearable
           className="w-full sm:max-w-[44%]"
@@ -156,7 +156,7 @@ export default function About() {
         </Dropdown>
       </div>
       <div className=" ">
-        <Table
+        <Table shadow="md"
           aria-label="Sortable table"
           // className="min-w-full w-full overflow-x-auto "
           onSortChange={(descriptor) => {
@@ -190,16 +190,16 @@ export default function About() {
             items={sortedItems}
             isLoading={isLoading}
             loadingContent={
-              <div className="h-full w-full flex items-center justify-center bg-white bg-opacity-50 backdrop-blur-sm z-50">
+              <div className="h-full w-full flex items-center justify-center  backdrop-blur-sm z-50">
                 <Spinner variant="spinner" color="danger" label="Loading..." />
               </div>
             }
-            className="bg-white dark:bg-red-500"
+           
           >
             {(item) => (
-              <TableRow key={item.id} className="bg-white dark:bg-slate-700">
+              <TableRow key={item.id} className="">
                 {(columnKey) => (
-                  <TableCell className="px-4 py-2 border-t border-gray-100 dark:border-gray-700">
+                  <TableCell className="px-4 py-2 ">
                     {renderCell(item, columnKey)}
                   </TableCell>
                 )}
@@ -248,6 +248,6 @@ export default function About() {
           />
         </div>
       </div>
-    </Card>
+    </>
   );
 }

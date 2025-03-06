@@ -25,7 +25,7 @@ export default function Layout({ children }) {
 
   return (
     <div
-      className="light text-foreground bg-background "
+      className=""
       dir={isRTL ? "rtl" : "ltr"}
     >
       <div
@@ -122,9 +122,10 @@ export default function Layout({ children }) {
           </nav>
 
           {/* Page Content */}
-          <main className="p-4 flex-1 bg-gray-100 dark:text-gray-300 dark:bg-gray-700">
+          <div className="p-4 flex-1">
             {children}
-          </main>
+          </div>
+          
 
           {/* Toast Notifications */}
           <ToastContainer

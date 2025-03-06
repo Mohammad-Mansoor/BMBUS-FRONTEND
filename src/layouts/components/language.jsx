@@ -54,7 +54,7 @@ function Language() {
     <div className="relative">
       <Dropdown>
         <DropdownTrigger>
-          <Button className="flex items-center justify-between px-4 py-2 rounded-lg bg-gray-800 border border-gray-600 hover:bg-gray-700 transition text-white">
+          <Button className="flex items-center justify-between   rounded-lg bg-primary-500  border border-primary-600 hover:bg-primary-500 transition text-white">
             <div className="flex items-center gap-2">
               <Image
                 src={currentLang.flag}
@@ -86,8 +86,8 @@ function Language() {
               <div className="flex items-center justify-start gap-3">
                 <Image
                   src={lang.flag}
-                  width={24}
-                  height={24}
+                  width={15}
+                  height={15}
                   alt={lang.label}
                   className="rounded-full"
                 />

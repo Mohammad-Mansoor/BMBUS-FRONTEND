@@ -1,3 +1,4 @@
+import { FiMenu, FiX } from "react-icons/fi";
 import DarkHandler from "./DarkMode";
 import Language from "./language";
 import { NotificationIcon } from "./Notification";
@@ -11,10 +12,18 @@ import {
   User,
 } from "@heroui/react";
 
-function Navbar() {
+function Navbar({ isSidebarOpen, setIsSidebarOpen }) {
   return (
-    <div className="w-full flex items-center justify-between overflow-hidden py-2">
+    <div className="w-full rounded-md  flex items-center justify-between overflow-hidden py-2 bg-primary-600 px-4">
       {/* <div className="text-white">logo</div> */}
+      {!isSidebarOpen && (
+        <button
+          className="text-white"
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        >
+          {isSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+        </button>
+      )}
       <div className="flex items-center gap-4 justify-end w-full">
         <div>
           <Language />
@@ -31,15 +40,17 @@ function Navbar() {
                 avatarProps={{
                   isBordered: true,
                   src: "https://i.pravatar.cc/150?u=a042581f4e29026024d",
-                  className: "md:w-10 md:h-10 w-9 h-9", // 24px on mobile (6 * 4px)
+                  className: "md:w-8 md:h-8 w-7 h-7", // 24px on mobile (6 * 4px)
                 }}
                 className="transition-transform"
                 description={
-                  <span className="max-md:hidden">@tonyreichert</span>
+                  <span className="max-md:hidden text-[14px]">
+                    @tonyreichert
+                  </span>
                 }
                 name={
                   <div className="flex flex-col max-md:hidden">
-                    <span className="font-bold">Tony Reichert</span>
+                    <span className="font-bold text-[14px]">Tony Reichert</span>
                     {/* Add email if needed */}
                   </div>
                 }

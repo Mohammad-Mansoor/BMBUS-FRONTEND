@@ -32,7 +32,7 @@ import { columns, statusColorMap } from "../../data/table-dummy-data";
 
 export default function About() {
   const INITIAL_VISIBLE_COLUMNS = ["name", "role", "status", "actions"];
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [visibleColumns, setVisibleColumns] = React.useState(
     new Set(INITIAL_VISIBLE_COLUMNS)
   );
@@ -120,7 +120,7 @@ export default function About() {
 
   return (
     <>
-    <div className="w-full py-4 px-4">
+      <div className="w-full py-4 px-4">
         <Input
           isClearable
           className="w-full sm:max-w-[44%]"
@@ -156,7 +156,8 @@ export default function About() {
         </Dropdown>
       </div>
       <div className=" ">
-        <Table shadow="md"
+        <Table
+          shadow="md"
           aria-label="Sortable table"
           // className="min-w-full w-full overflow-x-auto "
           onSortChange={(descriptor) => {
@@ -190,11 +191,10 @@ export default function About() {
             items={sortedItems}
             isLoading={isLoading}
             loadingContent={
-              <div className="h-full w-full flex items-center justify-center  backdrop-blur-sm z-50">
+              <div className="h-[80%] mt-10 w-full flex items-center justify-center  backdrop-blur-sm z-50">
                 <Spinner variant="spinner" color="danger" label="Loading..." />
               </div>
             }
-           
           >
             {(item) => (
               <TableRow key={item.id} className="">

@@ -26,13 +26,13 @@ export default function Layout({ children }) {
   return (
     <div className="" dir={isRTL ? "rtl" : "ltr"}>
       <div
-        className={`flex min-h-screen h-auto dark:bg-black ${
+        className={`flex min-h-screen h-auto dark:bg-black relative ${
           isRTL ? "flex-row-reverse" : ""
         }`}
       >
         {/* Sidebar */}
         <aside
-          className={`bg-gray-800 z-20 text-white p-4 fixed h-full shadow-xl transition-all duration-300 ${
+          className={`bg-primary-600 z-20 text-white p-4 absolute h-full shadow-2xl transition-all duration-300   ${
             isScreenMd
               ? isSidebarOpen
                 ? "w-64"
@@ -58,15 +58,15 @@ export default function Layout({ children }) {
             )}
           </div>
 
-          <ul className="flex flex-col items-center justify-start w-full">
+          <ul className="flex flex-col items-center justify-start w-full gap-3">
             {routes.map(
               (route, i) =>
                 route.name && (
                   <li
                     key={i}
-                    className={`p-2 ${
+                    className={` ${
                       isSidebarOpen ? "w-full" : ""
-                    } hover:bg-gray-700 rounded cursor-pointer flex items-center gap-3 ${
+                    } hover:bg-primary-500 rounded cursor-pointer flex items-center gap-3 ${
                       isRTL ? "flex-row-reverse" : ""
                     }`}
                   >
@@ -74,7 +74,7 @@ export default function Layout({ children }) {
                       to={route.path}
                       className={({ isActive }) =>
                         `flex items-center w-full p-2 rounded ${
-                          isActive ? "bg-gray-700 text-blue-400" : "text-white"
+                          isActive ? "bg-primary-500 text-white" : "text-white"
                         }`
                       }
                     >
@@ -97,7 +97,7 @@ export default function Layout({ children }) {
 
         {/* Main Content */}
         <div
-          className={`flex flex-col flex-1 ml-0 transition-all duration-300 ${
+          className={`flex flex-col flex-1 ml-0 transition-all duration-300 bg-primary-600 ${
             isScreenMd
               ? isSidebarOpen
                 ? isRTL
@@ -110,22 +110,19 @@ export default function Layout({ children }) {
           }`}
         >
           {/* Navbar */}
-          <nav className="bg-gray-900 text-white p-4 flex justify-between items-center">
-            {!isSidebarOpen && (
-              <button
-                className="text-white"
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              >
-                {isSidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
-              </button>
-            )}
-            <div className="w-full">
-              <Navbar />
+          <nav className=" text-white  flex justify-between items-center">
+            <div className="w-full rounded-md shadow-2xl ">
+              <Navbar
+                isSidebarOpen={isSidebarOpen}
+                setIsSidebarOpen={setIsSidebarOpen}
+              />
             </div>
           </nav>
 
           {/* Page Content */}
-          <div className="p-4 flex-1">{children}</div>
+          <div className="ml-[6px] mt-[6px] mr-[6px] mb-[6px]   flex-1">
+            {children}
+          </div>
 
           {/* Toast Notifications */}
           <ToastContainer

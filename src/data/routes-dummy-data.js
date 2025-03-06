@@ -1,16 +1,16 @@
 export const routes = [
   {
-    id: 1,
+    id: "1",
     name: "Highway A1",
     total_distance_km: 250.5,
     status: "active",
     stops: [
       {
-        city_id: 1,
+        city_id: "1",
         city_name: "Kishim",
-        province_id: 1,
+        province_id: "1",
         province_name: "Badakhshan",
-        stop_order: 1,
+        stop_order: "1",
         stop_type: "major",
         distance_from_start_km: 122.0,
         estimated_hours: 100.0,

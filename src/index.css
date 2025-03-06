@@ -14,7 +14,7 @@
   }
 }
 
-.dark {
+/* .dark {
   color-scheme: dark;
 }
 
@@ -32,4 +32,19 @@
 .dark .shadow-xl {
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.25),
     0 8px 10px -6px rgb(0 0 0 / 0.25);
+} */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #ff6b6b;
+    --color-secondary: #ffb347;
+    --color-accent: #ff8a65;
+    --color-neutral: #1e1e2e;
+    --color-base-100: #121212;
+    --color-base-200: #1f1f1f;
+    --color-base-300: #292929;
+    --color-info: #67e8f9;
+    --color-success: #34d399;
+    --color-warning: #fde047;
+    --color-error: #f87171;
+  }
 }

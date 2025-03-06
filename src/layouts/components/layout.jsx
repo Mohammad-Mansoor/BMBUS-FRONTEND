@@ -24,10 +24,7 @@ export default function Layout({ children }) {
   }, []);
 
   return (
-    <div
-      className=""
-      dir={isRTL ? "rtl" : "ltr"}
-    >
+    <div className="" dir={isRTL ? "rtl" : "ltr"}>
       <div
         className={`flex min-h-screen h-auto dark:bg-black ${
           isRTL ? "flex-row-reverse" : ""
@@ -83,7 +80,13 @@ export default function Layout({ children }) {
                     >
                       {route.icon}
                       {isSidebarOpen && (
-                        <span className="mx-2">{route.name}</span>
+                        <span className="mx-2">
+                          {i18n.language == "ps"
+                            ? route?.pashto_name
+                            : i18n.language == "fa"
+                            ? route?.dari_name
+                            : route?.name}
+                        </span>
                       )}
                     </NavLink>
                   </li>
@@ -122,10 +125,7 @@ export default function Layout({ children }) {
           </nav>
 
           {/* Page Content */}
-          <div className="p-4 flex-1">
-            {children}
-          </div>
-          
+          <div className="p-4 flex-1">{children}</div>
 
           {/* Toast Notifications */}
           <ToastContainer

@@ -1,5 +1,14 @@
 {
-  "welcome": "Welcome to our app!",
-  "language": "Language",
-  "change_language": "Change Language"
+  "initalValues": {
+    "welcome": "Welcome to our app!",
+    "language": "Language",
+    "change_language": "Change Language"
+  },
+  "routesPageValues": {
+    "header": "Manage Routes",
+    "columns": "Columns",
+    "createRoute": "Create Route",
+    "search": "Search",
+    "searchPlaceholder": "Search By City Name"
+  }
 }

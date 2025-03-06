@@ -1,5 +1,14 @@
 {
-  "welcome": "به برنامه ما خوش آمدید!",
-  "language": "زبان",
-  "change_language": "تغییر زبان"
+  "initalValues": {
+    "welcome": "به برنامه ما خوش آمدید!",
+    "language": "زبان",
+    "change_language": "تغییر زبان"
+  },
+  "routesPageValues": {
+    "header": "مدیریت مسیرها",
+    "columns": "ستون ها",
+    "createRoute": "ایجاد مسیر",
+    "search": "جستجو کردن",
+    "searchPlaceholder": "جستجو با نام شهر"
+  }
 }

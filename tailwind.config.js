@@ -1,5 +1,7 @@
 import { heroui } from "@heroui/theme";
+import { customTheme } from "./src/customTheme";
 /** @type {import('tailwindcss').Config} */
+
 export default {
   content: [
     "./index.html",
@@ -54,7 +56,7 @@ export default {
               800: "#672528",
               900: "#41171a",
               DEFAULT: "#d84e55",
-              foreground: "#fff"
+              foreground: "#fff",
             },
             secondary: {
               50: "#fff4df",
@@ -68,25 +70,25 @@ export default {
               800: "#794e00",
               900: "#4d3200",
               DEFAULT: "#ffa500",
-              foreground: "#000"
+              foreground: "#000",
             },
             success: {
               DEFAULT: "#17c964",
-              foreground: "#000"
+              foreground: "#000",
             },
             warning: {
               DEFAULT: "#f5a524",
-              foreground: "#000"
+              foreground: "#000",
             },
             danger: {
               DEFAULT: "#f31260",
-              foreground: "#fff"
+              foreground: "#fff",
             },
             background: "#ffffff",
             foreground: "#000000",
             focus: "#006FEE",
-            overlay: "#000000"
-          }
+            overlay: "#000000",
+          },
         },
         dark: {
           colors: {
@@ -106,39 +108,31 @@ export default {
             // },
             primary: {
               DEFAULT: "#d84e55",
-              foreground: "#fff"
+              foreground: "#fff",
             },
             secondary: {
               DEFAULT: "#ffa500",
-              foreground: "#000"
+              foreground: "#000",
             },
             success: {
               DEFAULT: "#17c964",
-              foreground: "#000"
+              foreground: "#000",
             },
             warning: {
               DEFAULT: "#f5a524",
-              foreground: "#000"
+              foreground: "#000",
             },
             danger: {
               DEFAULT: "#f31260",
-              foreground: "#fff"
+              foreground: "#fff",
             },
             background: "#000000",
             foreground: "#ffffff",
             focus: "#006FEE",
-            overlay: "#ffffff"
-          }
-        }
+            overlay: "#ffffff",
+          },
+        },
       },
     }),
   ],
 };
-
-
-
-
-
-
-
-

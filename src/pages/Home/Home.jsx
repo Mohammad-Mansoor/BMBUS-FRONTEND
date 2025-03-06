@@ -55,8 +55,8 @@ function Home() {
         </button>
       </div>
       <div className="text-center mt-10">
-        <h1 className="text-2xl font-bold">{t("welcome")}</h1>
-        <label className="block mt-4">{t("language")}:</label>
+        <h1 className="text-2xl font-bold">{t("initalValues.welcome")}</h1>
+        <label className="block mt-4">{t("initalValues.language")}:</label>
         <select
           className="border px-3 py-2 mt-2"
           value={i18n.language}

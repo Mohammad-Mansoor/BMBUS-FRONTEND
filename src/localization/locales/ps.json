@@ -1,5 +1,14 @@
 {
+  "initailValues": {
     "welcome": "زموږ ایپ ته ښه راغلاست!",
     "language": "ژبه",
     "change_language": "ژبه بدل کړئ"
+  },
+  "routesPageValues": {
+    "header": "د لارو اداره کول",
+    "columns": "کالمونه",
+    "createRoute": "لاره جوړه کړئ",
+    "search": "لټون",
+    "searchPlaceholder": "د ښار په نوم لټون وکړئ"
   }
+}

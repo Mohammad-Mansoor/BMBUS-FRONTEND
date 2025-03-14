@@ -6,35 +6,59 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  getKeyValue,
   Spinner,
+  Tooltip,
+  Chip,
+  useDisclosure,
+  addToast,
+  Card,
 } from "@heroui/react";
-import { MdArrowDownward, MdArrowUpward } from "react-icons/md";
 import { routes } from "../../../data/routes-dummy-data";
-import { Accordion, AccordionItem } from "@heroui/react";
+import { EyeIcon } from "../../general-Components/ViewIcon";
+import { EditIcon } from "../../general-Components/EditIcon";
+import { DeleteIcon } from "../../general-Components/deleteIcon";
+import { useTranslation } from "react-i18next";
+import {
+  deleteRoute,
+  getRoutes,
+} from "../../../services/operator-routes-service";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import ConfirmDeleteModal from "./confirmationModel";
+import { useNavigate } from "react-router-dom";
+import EmptyState from "./Norecords";
 
 // Custom accessor function for nested properties
 const getNestedValue = (item, columnKey) => {
   return columnKey.split(".").reduce((obj, key) => (obj || {})[key], item);
 };
 
-export default function TableDesign({ setTotalRecords }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [items, setItems] = useState(routes);
+export default function TableDesign({
+  setTotalRecords,
+  headerColumns,
+  routes,
+  isLoading,
+}) {
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const { i18n, t } = useTranslation();
+  const [deletingRoute, setDeletingRoute] = useState(false);
+  const [deleteRouteId, setDeleteRouteId] = useState("");
+  const [deleteRouteName, setDeleteRouteName] = useState("");
+
   const [sortDescriptor, setSortDescriptor] = useState({
-    column: "name", // Changed to valid column key
+    column: "name",
     direction: "ascending",
   });
 
   useEffect(() => {
     setTotalRecords(routes.length);
-  });
+  }, []);
+  const navigate = useNavigate();
+  // console.log("these are routes: ", data);
   const sortedItems = useMemo(() => {
-    return [...items].sort((a, b) => {
+    if (!routes) return []; // Ensure it's always an array
+    return [...routes].sort((a, b) => {
       const first = getNestedValue(a, sortDescriptor.column);
       const second = getNestedValue(b, sortDescriptor.column);
-
-      // Handle numeric comparison for distance/coordinates
       if (
         sortDescriptor.column.includes("distance") ||
         sortDescriptor.column.includes("km")
@@ -43,77 +67,142 @@ export default function TableDesign({ setTotalRecords }) {
           ? first - second
           : second - first;
       }
-
-      // Default string comparison
       const cmp = String(first ?? "").localeCompare(String(second ?? ""));
       return sortDescriptor.direction === "ascending" ? cmp : -cmp;
     });
-  }, [items, sortDescriptor]);
+  }, [routes, sortDescriptor]);
 
   const handleSortChange = (newDescriptor) => {
     setSortDescriptor(newDescriptor);
   };
 
   return (
-    <Table
-      aria-label="Routes table"
-      classNames={{
-        table: "min-h-[400px]",
-        tr: "hover:bg-primary-100 transition-colors duration-200 cursor-pointer",
-      }}
-      sortDescriptor={sortDescriptor}
-      onSortChange={handleSortChange}
-    >
-      <TableHeader>
-        <TableColumn key="name" allowsSorting>
-          Route Name
-        </TableColumn>
-        <TableColumn key="status" allowsSorting>
-          Status
-        </TableColumn>
-        <TableColumn key="total_distance_km" allowsSorting>
-          Distance (km)
-        </TableColumn>
-        <TableColumn key="origin.name" allowsSorting>
-          Origin
-        </TableColumn>
-        <TableColumn key="destination.name" allowsSorting>
-          Destination
-        </TableColumn>
-        <TableColumn key="stops.length" allowsSorting>
-          Stops Count
-        </TableColumn>
-      </TableHeader>
-      <TableBody
-        isLoading={isLoading}
-        items={sortedItems}
-        loadingContent={
-          <div className="h-[80%] mt-10 w-full flex items-center justify-center backdrop-blur-sm z-50">
-            <Spinner variant="spinner" color="danger" label="Loading..." />
-          </div>
-        }
+    <>
+      <ConfirmDeleteModal
+        isOpen={isOpen}
+        onClose={onClose}
+        onOpen={onOpen}
+        onOpenChange={onOpenChange}
+        deleteRouteId={deleteRouteId}
+        setDeleteRouteId={setDeleteRouteId}
+        deleteRouteName={deleteRouteName}
+        setDeleteRouteName={setDeleteRouteName}
+      />
+
+      <Table
+        aria-label="Routes table"
+        classNames={{
+          table: "min-h-[400px]",
+          tr: "hover:bg-primary-50 transition-colors duration-200 cursor-pointer rounded-lg",
+        }}
+        sortDescriptor={sortDescriptor}
+        onSortChange={handleSortChange}
       >
-        {(item) => (
-          <TableRow
-            key={`${item.id}-${item.name}`}
-            className="!hover:bg-gray-300"
-          >
-            {(columnKey) => {
-              const value = getNestedValue(item, columnKey);
+        <TableHeader columns={headerColumns}>
+          {(column) => (
+            <TableColumn key={column.uid} allowsSorting={column.sortable}>
+              {column?.name}
+            </TableColumn>
+          )}
+        </TableHeader>
+        <TableBody
+          emptyContent={<EmptyState />}
+          isLoading={isLoading}
+          items={sortedItems?.length > 0 ? sortedItems : []}
+          loadingContent={
+            <div className="h-[80%] mt-10 w-full flex items-center justify-center backdrop-blur-sm z-50">
+              <Spinner variant="spinner" color="danger" label="Loading..." />
+            </div>
+          }
+        >
+          {(item) => (
+            <TableRow key={`${item.id}-${item.name}`}>
+              {(columnKey) => {
+                const value = getNestedValue(item, columnKey);
 
-              // Format specific values
-              if (columnKey === "total_distance_km") {
-                return <TableCell>{value} km</TableCell>;
-              }
-              if (columnKey === "stops.length") {
-                return <TableCell>{value} stops</TableCell>;
-              }
+                if (columnKey === "total_distance_km") {
+                  return (
+                    <TableCell>
+                      {item.total_distance_km}{" "}
+                      {i18n.language == "en" ? "KM" : "کیلومتر"}
+                    </TableCell>
+                  );
+                }
 
-              return <TableCell>{value}</TableCell>;
-            }}
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+                if (columnKey === "stops.length") {
+                  return (
+                    <TableCell>
+                      {item.stops.length} {t("routesPageValues.table_stops")}
+                    </TableCell>
+                  );
+                }
+                if (columnKey === "status") {
+                  return (
+                    <TableCell>
+                      <Chip
+                        className="capitalize"
+                        color={
+                          item.status == "active"
+                            ? "success"
+                            : "inactive"
+                            ? "danger"
+                            : "danger"
+                        }
+                        size="md"
+                        variant="flat"
+                      >
+                        {value}
+                      </Chip>
+                    </TableCell>
+                  );
+                }
+                if (columnKey === "actions") {
+                  return (
+                    <TableCell>
+                      <div className="relative flex items-center justify-center gap-2">
+                        <Tooltip content={t("routesPageValues.tooltipView")}>
+                          <span className="text-lg text-default-400 cursor-pointer active:opacity-50">
+                            <EyeIcon />
+                          </span>
+                        </Tooltip>
+                        <Tooltip content={t("routesPageValues.tooltipEdit")}>
+                          <span
+                            className="text-lg text-default-400 cursor-pointer active:opacity-50"
+                            onClick={() => {
+                              navigate(
+                                `/operator-routes/create-route/${item.id}`
+                              );
+                            }}
+                          >
+                            <EditIcon />
+                          </span>
+                        </Tooltip>
+                        <Tooltip
+                          color="danger"
+                          content={t("routesPageValues.tooltipDelete")}
+                        >
+                          <span
+                            className="text-lg text-danger cursor-pointer active:opacity-50"
+                            onClick={() => {
+                              setDeleteRouteId(item?.id);
+                              setDeleteRouteName(item?.name);
+                              onOpen();
+                            }}
+                          >
+                            <DeleteIcon />
+                          </span>
+                        </Tooltip>
+                      </div>
+                    </TableCell>
+                  );
+                }
+
+                return <TableCell>{value}</TableCell>;
+              }}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </>
   );
 }

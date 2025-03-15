@@ -7,17 +7,31 @@ import {
   Autocomplete,
   Chip,
   Tooltip,
+  addToast,
+  Spinner,
 } from "@heroui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { IoMdArrowRoundForward } from "react-icons/io";
 import { IoArrowBack } from "react-icons/io5";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { MdDelete, MdStopScreenShare } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
+import {
+  createOperatorRoute,
+  getCities,
+  getRoute,
+  updateOperatorRoute,
+} from "../../services/operator-routes-service";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { myFilter } from "../../utils/myFilterFunctionForAutomcomplete";
 
-function Contact() {
+function CreateRoute() {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const [creatingRoute, setCreatingRoute] = useState(false);
   const [origin, setOrigin] = useState("");
   const [destination, setDistination] = useState("");
   const [totalDistance, setTotalDistance] = useState("");
@@ -26,17 +40,56 @@ function Contact() {
   const [city, setCity] = useState("");
   const [stopOrder, setStopOrder] = useState("");
   const [stopType, setStopType] = useState("");
-  const [selectedCity, setSelectedCity] = useState("");
+  const [translations, setTranslations] = useState({
+    en: "",
+    ps: "",
+    fa: "",
+  });
   const [stopErrors, setStopErrors] = useState({
     cityError: "",
     orderError: "",
     typeError: "",
   });
+  const { id } = useParams();
+  console.log(typeof id, "this is the type of id ");
 
+  useEffect(() => {
+    const getRoutee = async () => {
+      try {
+        const res = await getRoute(id);
+        setStops(res.data.stops);
+        setDistination(res.data.destination.id);
+        setOrigin(res?.data?.origin?.id);
+        setTotalDistance(res?.data?.total_distance_km);
+        setStatus(res?.data?.status);
+        // setEn(res?.data?.name);
+        handleTranslationChange("en", res?.data?.translations?.en?.name);
+        handleTranslationChange("ps", res?.data?.translations?.ps?.name);
+        handleTranslationChange("fa", res?.data?.translations?.fa?.name);
+        console.log(res.data, "this is the single route");
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    if (id == "null") {
+      return;
+    } else {
+      getRoutee();
+    }
+  }, [id, i18n.language]);
+
+  const {
+    isLoading: citiesLoading,
+    data: cities,
+    error: citiesError,
+  } = useQuery({
+    queryKey: ["cities", i18n.language],
+    queryFn: getCities,
+  });
+
+  // console.log("these are citites see this: ", citiess);
   const handleValidation = () => {
     let newErrors = {};
-
-    // Validate City
     if (!city) {
       newErrors.city = "Stop City is required!";
     }
@@ -57,17 +110,7 @@ function Contact() {
 
     return Object.keys(newErrors).length === 0;
   };
-  const [translations, setTranslations] = useState({
-    en: "",
-    ps: "",
-    fa: "",
-  });
 
-  const cities = [
-    { id: 1, name: "Kishim", province: "Badakhshan" },
-    { id: 2, name: "Bala Murghab", province: "Badghis" },
-    { id: 3, name: "Nahrin", province: "Baghlan" },
-  ];
   const routeStatuses = [
     { name: "active", id: 1 },
     { name: "inactive", id: 2 },
@@ -83,32 +126,122 @@ function Contact() {
     setStopType("");
     setCity("");
   };
+
   const removeStop = (index) => {
     const updatedStops = stops.filter((s, i) => i !== index);
     setStops(updatedStops);
   };
-  const onSubmit = (e) => {
+  const resetrouteFields = () => {
+    setOrigin("");
+    setStatus("");
+    setTotalDistance("");
+    setStops([]);
+    setDistination("");
+    handleTranslationChange("en", "");
+    handleTranslationChange("ps", "");
+    handleTranslationChange("fa", "");
+  };
+
+  const {
+    isLoading: updatingRoute,
+    mutate: updateMutate,
+    error: updateError,
+  } = useMutation({
+    mutationFn: async (payload) => {
+      setCreatingRoute(true);
+      try {
+        const res = await updateOperatorRoute(id, payload);
+
+        console.log("updating route");
+        return res;
+      } catch (error) {
+        throw error;
+      }
+    },
+    onSuccess: (data) => {
+      console.log(data);
+      addToast({
+        title: "Update Route",
+        description: "Route Updated Successfully",
+        variant: "solid",
+        color: "success",
+      });
+
+      setCreatingRoute(false);
+      queryClient.invalidateQueries({ queryKey: ["routes"] });
+      navigate("/operator-routes");
+    },
+    onError: (error) => {
+      console.log(error);
+      addToast({
+        title: "Failed to Update Route",
+        description: "Oops, there is an issue with updating the route",
+        variant: "solid",
+        color: "danger",
+      });
+      setCreatingRoute(false);
+      resetrouteFields();
+    },
+  });
+
+  const { isLoading, mutate, error } = useMutation({
+    mutationFn: async (payload) => {
+      setCreatingRoute(true);
+
+      const res = await createOperatorRoute(payload);
+      return res;
+    },
+    onSuccess: (data) => {
+      addToast({
+        title: "Route Created",
+        description: "Route Successfully Created",
+        color: "success",
+        variant: "solid",
+      });
+
+      resetrouteFields();
+      setCreatingRoute(false);
+      queryClient.invalidateQueries({ queryKey: ["routes"] });
+      navigate("/operator-routes");
+
+      console.log("Post created successfully:", data);
+    },
+    onError: (error) => {
+      addToast({
+        title: "Error",
+        description: `${error.response.data.message}`,
+        color: "danger",
+        variant: "solid",
+      });
+
+      setCreatingRoute(false);
+      console.error("Error creating post:", error);
+    },
+  });
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-
-    // Convert to object
     const formValuesObject = Object.fromEntries(formData);
-
     const payload = {
       translations: {
-        en: formValuesObject.en,
-        ps: formValuesObject.ps,
-        fa: formValuesObject.fa,
+        en: { name: formValuesObject.en },
+        ps: { name: formValuesObject.ps },
+        fa: { name: formValuesObject.fa },
       },
-      destination: destination,
-      origin: origin,
-      status: status,
+      destination,
+      origin,
+      status,
       total_distance_km: totalDistance,
-      stops: stops,
+      stops,
     };
-    console.log("Form values as object:", formValuesObject);
-    console.log(payload, "this is payload for create route");
+    if (id == "null") {
+      mutate(payload);
+    } else {
+      updateMutate(payload);
+    }
   };
+
   const handleTranslationChange = (field, value) => {
     setTranslations((prev) => ({ ...prev, [field]: value }));
   };
@@ -131,7 +264,9 @@ function Contact() {
       <div className="w-full  py-1 px-3">
         <div className="my-2 flex items-center justify-between  ">
           <div>
-            <h1 className="text-[24px]">Create New Route</h1>
+            <h1 className="text-[24px]">
+              {t("createOperatorPageValues.title")}
+            </h1>
           </div>
           <Link
             to="/operator-routes "
@@ -153,11 +288,13 @@ function Contact() {
         >
           <div className="w-full grid grid-cols-12 items-center gap-4">
             <div className="col-span-12">
-              <h1 className="text-[20px] text-gray-500">Basic Information</h1>
+              <h1 className="text-[20px] text-gray-500">
+                {t("createOperatorPageValues.basic_information")}
+              </h1>
             </div>
           </div>
           <Form
-            onSubmit={onSubmit}
+            onSubmit={handleSubmit}
             className="col-span-12 grid grid-cols-12 gap-4 pb-4 space-y-4"
           >
             <div className="col-span-12 md:col-span-6 lg:col-span-4 mt-4">
@@ -168,7 +305,7 @@ function Contact() {
                 isClearable
                 radius="sm"
                 className="w-full dark:text-white !h-[40px] "
-                placeholder={"Enter English Route Name"}
+                placeholder={t("createOperatorPageValues.en_name_placeholder")}
                 type="text"
                 variant="bordered"
                 color="default"
@@ -178,10 +315,10 @@ function Contact() {
                 onClear={() => handleTranslationChange("en", "")}
                 errorMessage={({ validationDetails }) => {
                   if (validationDetails.valueMissing) {
-                    return "English Route Name is Required!";
+                    return t("createOperatorPageValues.en_validationError");
                   }
                 }}
-                label={"English Route Name"}
+                label={t("createOperatorPageValues.en_name")}
                 labelPlacement="outside"
               />
             </div>
@@ -193,7 +330,7 @@ function Contact() {
                 isClearable
                 radius="sm"
                 className="w-full dark:text-white !h-[40px] "
-                placeholder={"Enter Pashto Route Name"}
+                placeholder={t("createOperatorPageValues.ps_name_placeholder")}
                 type="text"
                 variant="bordered"
                 color="default"
@@ -204,10 +341,10 @@ function Contact() {
                 onClear={() => handleTranslationChange("ps", "")}
                 errorMessage={({ validationDetails }) => {
                   if (validationDetails.valueMissing) {
-                    return "Pashto Route Name is Required!";
+                    return t("createOperatorPageValues.ps_validationError");
                   }
                 }}
-                label={"Pashto Route Name"}
+                label={t("createOperatorPageValues.ps_name")}
                 labelPlacement="outside"
               />
             </div>
@@ -219,7 +356,7 @@ function Contact() {
                 isClearable
                 radius="sm"
                 className="w-full dark:text-white !h-[40px] "
-                placeholder={"Enter Dari Route Name"}
+                placeholder={t("createOperatorPageValues.fa_name_placeholder")}
                 type="text"
                 variant="bordered"
                 color="default"
@@ -229,10 +366,10 @@ function Contact() {
                 onClear={() => handleTranslationChange("fa", "")}
                 errorMessage={({ validationDetails }) => {
                   if (validationDetails.valueMissing) {
-                    return "Dari Route Name is Required!";
+                    return t("createOperatorPageValues.fa_validationError");
                   }
                 }}
-                label={"Dari Route Name"}
+                label={t("createOperatorPageValues.fa_name")}
                 labelPlacement="outside"
               />
             </div>
@@ -240,19 +377,19 @@ function Contact() {
               <Autocomplete
                 name="origin"
                 isRequired
-                errorMessage="Origin City is requried!"
+                errorMessage={t("createOperatorPageValues.origin_errorMessage")}
                 validate={(value) => value === undefined || value === ""}
                 className="!w-full !label:text-gray-300 "
                 style={{ width: "100%" }}
-                items={cities}
+                items={cities || []}
                 selectedKey={origin}
                 inputValue={
-                  origin ? cities.find((c) => c.id == origin)?.name : ""
+                  origin ? cities?.find((c) => c.id == origin)?.name : ""
                 }
-                placeholder="Select Origin"
+                placeholder={t("createOperatorPageValues.origin_placeholder")}
                 variant="bordered"
                 color="default"
-                label={"Origin City"}
+                label={t("createOperatorPageValues.origin")}
                 labelPlacement="outside"
                 allowsCustomValue
                 onSelectionChange={(key) => {
@@ -277,21 +414,28 @@ function Contact() {
               <Autocomplete
                 name="destination"
                 isRequired
-                errorMessage="Distination City is requried!"
+                isOpen={false}
+                errorMessage={t(
+                  "createOperatorPageValues.destination_errorMessage"
+                )}
                 validate={(value) => value === undefined || value === ""}
                 className="!w-full !label:text-gray-300 "
                 style={{ width: "100%" }}
-                items={cities}
+                defaultFilter={myFilter}
+                defaultItems={cities}
+                items={cities || []}
                 selectedKey={destination}
-                inputValue={
-                  destination
-                    ? cities.find((c) => c.id == destination)?.name
-                    : ""
-                }
-                placeholder="Select Destination"
+                // inputValue={
+                //   destination
+                //     ? cities?.find((c) => c.id == destination)?.name
+                //     : ""
+                // }
+                placeholder={t(
+                  "createOperatorPageValues.destination_placeholder"
+                )}
                 variant="bordered"
                 color="default"
-                label={"Destination City"}
+                label={t("createOperatorPageValues.destination")}
                 labelPlacement="outside"
                 allowsCustomValue
                 onSelectionChange={(key) => {
@@ -320,7 +464,9 @@ function Contact() {
                 isClearable
                 radius="sm"
                 className="w-full dark:text-white !h-[40px] "
-                placeholder={"Enter Total Distance in KM"}
+                placeholder={t(
+                  "createOperatorPageValues.total_distance_placeholder"
+                )}
                 type="text"
                 variant="bordered"
                 color="default"
@@ -329,14 +475,18 @@ function Contact() {
                 }}
                 validate={(value) => {
                   if (isNaN(value)) {
-                    return "Total Distance in KM must be a number";
+                    return t(
+                      "createOperatorPageValues.total_distance_numberError"
+                    );
                   }
                   if (!value) {
-                    return "Total Distance in KM is required!";
+                    return t(
+                      "createOperatorPageValues.total_distance_requiredError"
+                    );
                   }
                 }}
                 onClear={() => setTotalDistance("")}
-                label={"Total Distance (KM)"}
+                label={t("createOperatorPageValues.total_distance")}
                 labelPlacement="outside"
               />
             </div>
@@ -345,17 +495,19 @@ function Contact() {
                 name="status"
                 isRequired
                 value={status}
-                errorMessage="Route Status is required!"
+                errorMessage={t(
+                  "createOperatorPageValues.route_status_errorMessage"
+                )}
                 validate={(value) => value === undefined || value === ""}
                 className="!w-full !label:text-gray-300 "
                 style={{ width: "100%" }}
                 items={routeStatuses}
                 selectedKey={status}
                 inputValue={status}
-                placeholder="Select Route Status"
+                placeholder={t("createOperatorPageValues.status_placeholder")}
                 variant="bordered"
                 color="default"
-                label={"Route Status"}
+                label={t("createOperatorPageValues.route_status")}
                 labelPlacement="outside"
                 allowsCustomValue
                 onSelectionChange={(key) => {
@@ -385,7 +537,7 @@ function Contact() {
               className="w-full col-span-12 grid grid-cols-12 gap-4 pb-4 space-y-4 "
             > */}
             <div className="text-[20px] text-gray-500 col-span-12">
-              <h1>Route Stops</h1>
+              <h1>{t("createOperatorPageValues.Route_stops")}</h1>
             </div>
             <div className="col-span-12 md:col-span-6 lg:col-span-4">
               <Autocomplete
@@ -397,21 +549,32 @@ function Contact() {
                     "data-[invalid=true]:focus:ring-red-500",
                   ],
                 }}
-                errorMessage="Stop City is requried!"
+                errorMessage={t(
+                  "createOperatorPageValues.stop_city_errorMessage"
+                )}
                 validate={stopErrors.city ? true : false}
                 className="!w-full !label:text-gray-300 "
                 style={{ width: "100%" }}
-                items={cities}
+                items={cities || []}
                 selectedKey={city}
-                inputValue={city ? cities.find((c) => c.id == city)?.name : ""}
-                placeholder="Select Stop City"
+                inputValue={city ? cities?.find((c) => c.id == city)?.name : ""}
+                placeholder={t(
+                  "createOperatorPageValues.stop_city_placeholder"
+                )}
                 variant="bordered"
                 color="default"
-                label={"Stop City"}
+                label={t("createOperatorPageValues.stop_city")}
                 labelPlacement="outside"
                 allowsCustomValue
                 onSelectionChange={(key) => {
-                  setCity(key);
+                  if (key == null) {
+                    setCity(null);
+                  } else {
+                    setCity(key);
+                    if (stopErrors.city) {
+                      delete stopErrors.city;
+                    }
+                  }
                 }}
               >
                 {(item) => (
@@ -431,7 +594,9 @@ function Contact() {
               <Input
                 value={stopOrder}
                 isInvalid={stopErrors.stopOrder ? true : false}
-                errorMessage="Stop Order is required"
+                errorMessage={t(
+                  "createOperatorPageValues.stop_order_errorMessage"
+                )}
                 classNames={{
                   inputWrapper: [
                     "data-[invalid=true]:border-red-500",
@@ -442,21 +607,28 @@ function Contact() {
                 isClearable
                 radius="sm"
                 className="w-full dark:text-white !h-[40px] "
-                placeholder={"Enter Stop Order"}
+                placeholder={t(
+                  "createOperatorPageValues.stop_order_placeholder"
+                )}
                 type="text"
                 variant="bordered"
                 color="default"
                 onChange={(e) => {
                   setStopOrder(e.target.value);
+                  if (stopErrors.stopOrder) {
+                    delete stopErrors.stopOrder;
+                  }
                 }}
                 onClear={() => setStopOrder("")}
-                label={"Stop Order"}
+                label={t("createOperatorPageValues.stop_order")}
                 labelPlacement="outside"
               />
             </div>
             <div className="col-span-12 md:col-span-6 lg:col-span-4 flex flex-col gap-2">
               <Autocomplete
-                errorMessage="Stop Type is requried!"
+                errorMessage={t(
+                  "createOperatorPageValues.stop_type_errorMessage"
+                )}
                 isInvalid={stopErrors.stopType ? true : false}
                 classNames={{
                   inputWrapper: [
@@ -470,16 +642,21 @@ function Contact() {
                 items={stopTypes}
                 selectedKey={stopType}
                 inputValue={stopType}
-                placeholder="Select Stop Type"
+                placeholder={t(
+                  "createOperatorPageValues.stop_type_placeholder"
+                )}
                 variant="bordered"
                 color="default"
-                label={"Stop Type"}
+                label={t("createOperatorPageValues.stop_type")}
                 labelPlacement="outside"
                 allowsCustomValue
                 onSelectionChange={(key) => {
                   if (key == null) {
                     setStopType("");
                   } else {
+                    if (stopErrors.stopType) {
+                      delete stopErrors.stopType;
+                    }
                     setStopType(key);
                   }
                 }}
@@ -507,7 +684,7 @@ function Contact() {
                   handleStopAdd();
                 }}
               >
-                Add Stop
+                {t("createOperatorPageValues.add_stop")}
               </Button>
             </div>
             <div className="my-2 col-span-12">
@@ -522,7 +699,7 @@ function Contact() {
                     </div>
                     <div className="flex flex-col gap-4">
                       {stops.map((stop, i) => {
-                        const city = cities.find((c) => c.id == stop.city);
+                        const city = cities?.find((c) => c.id == stop.city);
 
                         return (
                           <div
@@ -551,7 +728,12 @@ function Contact() {
 
                             {/* Action Buttons */}
                             <div className="flex items-center gap-3">
-                              <Tooltip content="Edit Stop" showArrow={true}>
+                              <Tooltip
+                                content={t(
+                                  "createOperatorPageValues.edit_stop"
+                                )}
+                                showArrow={true}
+                              >
                                 <button className="p-2 rounded-full hover:bg-blue-100 transition">
                                   <FaRegEdit
                                     className="text-blue-500"
@@ -560,7 +742,9 @@ function Contact() {
                                 </button>
                               </Tooltip>
                               <Tooltip
-                                content="Remove Stop"
+                                content={t(
+                                  "createOperatorPageValues.delete_stop"
+                                )}
                                 showArrow={true}
                                 color="danger"
                               >
@@ -588,8 +772,15 @@ function Contact() {
             </div>
             {/* </Form> */}
             <div className="col-span-12 flex items-center justify-end">
-              <Button type="submit" variant="bordered">
-                Submit
+              <Button
+                spinner={<Spinner variant="default" />}
+                spinnerPlacement="start"
+                isLoading={creatingRoute}
+                type="submit"
+                variant="ghost"
+                color="primary"
+              >
+                {t("createOperatorPageValues.submit")}
               </Button>
             </div>
           </Form>
@@ -599,4 +790,4 @@ function Contact() {
   );
 }
 
-export default Contact;
+export default CreateRoute;

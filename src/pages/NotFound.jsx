@@ -1,5 +1,9 @@
 function NotFound() {
-  return <div>this is notfound page</div>;
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-gray-50 text-[80px]">
+      this is notfound page
+    </div>
+  );
 }
 
 export default NotFound;

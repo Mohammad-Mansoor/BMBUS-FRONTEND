@@ -35,11 +35,11 @@ export default function Layout({ children }) {
           className={`bg-primary-600 z-20 text-white p-4 absolute h-full shadow-2xl transition-all duration-300   ${
             isScreenMd
               ? isSidebarOpen
-                ? "w-64"
+                ? "w-52"
                 : "w-16"
               : isSidebarOpen
-              ? "translate-x-0 w-64"
-              : "-translate-x-[400px] w-64"
+              ? "translate-x-0 w-52"
+              : "-translate-x-[500px] w-52"
           } md:translate-x-0 ${
             isRTL ? "right-0 left-auto" : "left-0 right-auto"
           }`}
@@ -80,7 +80,7 @@ export default function Layout({ children }) {
                     >
                       {route.icon}
                       {isSidebarOpen && (
-                        <span className="mx-2">
+                        <span className="mx-2 text-[15px]">
                           {i18n.language == "ps"
                             ? route?.pashto_name
                             : i18n.language == "fa"
@@ -101,8 +101,8 @@ export default function Layout({ children }) {
             isScreenMd
               ? isSidebarOpen
                 ? isRTL
-                  ? "md:mr-64"
-                  : "md:ml-64"
+                  ? "md:mr-52"
+                  : "md:ml-52"
                 : isRTL
                 ? "md:mr-16"
                 : "md:ml-16"
@@ -120,7 +120,7 @@ export default function Layout({ children }) {
           </nav>
 
           {/* Page Content */}
-          <div className="ml-[6px] mt-[6px] mr-[6px] mb-[6px]   flex-1">
+          <div className="ml-[6px] mt-[6px] mr-[6px] mb-[6px] overflow-y-hidden flex-1">
             {children}
           </div>
 
